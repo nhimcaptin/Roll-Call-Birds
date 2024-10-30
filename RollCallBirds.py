@@ -1,5 +1,6 @@
 from selenium import webdriver
 import time
+import random
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -11,11 +12,17 @@ from utils import action_play_game, getUserDataDir, chrome_driver_path, clickBut
 countProject = int(input("Nhập số profile: "))
 numberThreads = int(input("Nhập số luồng: "))
 proxy = []
+# buttonActions = [
+#     "//button[@type='button' and contains(text(), 'Continue')]",
+#     "//img[@alt='hammer']",
+#     "//a[@href='/daily']",
+#     "//button[not(contains(@class, 'pointer-events-none')) and contains(., 'Day')]",
+# ]
+
 buttonActions = [
     "//button[@type='button' and contains(text(), 'Continue')]",
-    "//img[@alt='hammer']",
-    "//a[@href='/daily']",
-    "//button[not(contains(@class, 'pointer-events-none')) and contains(., 'Day')]",
+    "//a[@href='/storage']",
+    "//button[@type='button' and text()='Locked']",
 ]
 
 with open("proxy.txt", "r", encoding="utf-8") as file:
@@ -43,8 +50,45 @@ def run_profile(i):
         # Chuyển sang iframe chứa tab
         iframe = driver.find_element(By.TAG_NAME, "iframe")
         driver.switch_to.frame(iframe)
+        
         for button in buttonActions:
             clickButton(driver, button)
+            
+        try:
+            random_number = random.uniform(0.5, 2)
+            time.sleep(random_number)
+            allButtonLockEarn = WebDriverWait(driver, 10).until(
+                EC.presence_of_all_elements_located((By.XPATH, "//div[contains(text(), 'Locked')]/ancestor::div[contains(@class, 'card')]"))
+            )
+            
+            for buttonLockEarn in allButtonLockEarn:
+                
+                buttonLockEarn.click()
+                time.sleep(0.5)
+                clickButton(driver, "//button[text()='Confirm']")
+                
+                try:
+                    input_field = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, "//input[@id='swal2-input']"))
+                    )
+                    input_field.send_keys(230602)
+                    
+                    time.sleep(0.5)
+                    buttonUnlock = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Unlock')]"))
+                    )
+                    buttonUnlock.click()
+                except Exception as e:
+                    print("Không cần nhập ví")
+                
+                buttonApprove = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Approve')]"))
+                )
+                buttonApprove.click()
+                time.sleep(10)
+
+        except Exception as e:
+            print("e:", e)
     except Exception as e:
         print(f"Không thể click vào tab 'Earn': {e}")
 
@@ -53,4 +97,4 @@ def run_profile(i):
 
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=numberThreads) as executor:
-    executor.map(run_profile, range(3, countProject + 1))
+    executor.map(run_profile, range(1, countProject + 1))
