@@ -6,11 +6,71 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import random
 
-chrome_driver_path = r"E:\Airdrop\Resources\chromedriver-win64\chromedriver.exe"
+chrome_driver_path = r"C:\Users\Tran Danh Doanh\Downloads\chromedriver-win64\chromedriver.exe"
 
+def timesSleep(max = 2):
+    random_number = random.uniform(0.5, max)
+    time.sleep(random_number)
 
 def getUserDataDir(index):
-    return rf"C:\Users\doanh.tran\AppData\Local\Google\Chrome\User Data\Profile {index}"
+    return rf"C:\Users\Tran Danh Doanh\AppData\Local\Google\Chrome\User Data\Profile {index}"
+
+def getInformationWorm(driver, buttonInformation):
+    try:
+        informationWorm = []
+        for information in buttonInformation:
+            value = driver.find_element(By.XPATH, information[0]).text
+            count = driver.find_element(By.XPATH, information[1]).text.split('x')[1]
+            informationWorm.append({'value': int(value), 'count': int(count), 'XPath': information[2]})
+        return informationWorm
+    except Exception as e:
+            print(f"Lỗi: {e}")
+
+def allActionWorm(count, data):
+    results = []
+    while count > 0:
+        if (count >= data[2]['value'] and
+            results.count(data[2]['value']) < data[2]['count']):
+            count -= data[2]['value']
+            results.append(data[2]['XPath'])
+        elif (count >= data[1]['value'] and
+            results.count(data[1]['value']) < data[1]['count']):
+            count -= data[1]['value']
+            results.append(data[1]['XPath'])
+        elif (count >= data[0]['value'] and
+            results.count(data[0]['value']) < data[0]['count']):
+            count -= data[0]['value']
+            results.append(data[0]['XPath'])
+    
+    return results
+
+def authenticationWallet(driver):
+        try:
+            # Nhập password ví
+            try:
+                timesSleep()
+                input_field = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//input[@id='swal2-input']"))
+                )
+                input_field.send_keys(230602)
+
+                timesSleep(5)
+                buttonUnlock = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Unlock')]"))
+                )
+                buttonUnlock.click()
+            except Exception as e:
+                print("Không cần nhập ví")
+            # Kêt thúc nhập password ví
+                
+            timesSleep(3)
+            buttonApprove = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Approve')]"))
+            )
+            buttonApprove.click()
+
+        except Exception as e:
+            print("Đã xác thực giao dịch thành công")
 
 
 def clickButton(driver, XPATH):
@@ -37,7 +97,7 @@ def action_play_game(driver):
             print("Đã nhấn nút 'Play'")
             time.sleep(5)
         except Exception as e:
-            print(f"Không thấy nút 'Play'")
+            print()
 
         try:
             button_open_app = driver.find_elements(
@@ -48,7 +108,7 @@ def action_play_game(driver):
             print("Đã nhấn nút 'Open App'")
             time.sleep(1)
         except Exception as e:
-            print(f"Không thấy nút 'Open App'")
+            print()
 
         try:
             button_confirm = driver.find_element(
@@ -59,7 +119,7 @@ def action_play_game(driver):
                 print("Đã nhấn nút 'Confirm'")
                 time.sleep(1)
         except Exception as e:
-            print(f"Không thấy nút Confirm")
+            print()
 
         try:
             launch_button = driver.find_element(
@@ -70,10 +130,10 @@ def action_play_game(driver):
                 print("Đã nhấn nút 'Launch'")
                 time.sleep(1)
         except Exception as e:
-            print(f"Không thấy nút Launch")
+            print()
 
     except Exception as e:
-        print(f"Không thấy nút")
+        print(f"Không thể start game: ",e)
 
 
 def sort_data_by_user_id():
