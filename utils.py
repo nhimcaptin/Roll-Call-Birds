@@ -92,19 +92,28 @@ def authenticationWallet(driver):
         print("Đã xác thực giao dịch thành công")
 
 
-def clickButton(driver, XPATH):
+def clickButton(driver, XPATH, message=""):
     try:
-        random_number = random.uniform(0.5, 5)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, XPATH))
         )
-        time.sleep(random_number)
+        timesSleep(5)
         button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, XPATH))
         )
+        driver.execute_script(
+            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+            button,
+        )
+        timesSleep(1)
         button.click()
+        return False
     except Exception as e:
-        print(f"Lỗi: {e}")
+        if message:
+           print(message)
+           return True
+        else: 
+            pass
 
 
 def action_play_game(driver):
@@ -118,7 +127,7 @@ def action_play_game(driver):
             print("Đã nhấn nút 'Play'")
             time.sleep(5)
         except Exception as e:
-            print()
+            pass
 
         try:
             button_open_app = driver.find_elements(
@@ -129,7 +138,7 @@ def action_play_game(driver):
             print("Đã nhấn nút 'Open App'")
             time.sleep(1)
         except Exception as e:
-            print()
+            pass
 
         try:
             button_confirm = driver.find_element(
@@ -140,7 +149,7 @@ def action_play_game(driver):
                 print("Đã nhấn nút 'Confirm'")
                 time.sleep(1)
         except Exception as e:
-            print()
+            pass
 
         try:
             launch_button = driver.find_element(
@@ -151,7 +160,7 @@ def action_play_game(driver):
                 print("Đã nhấn nút 'Launch'")
                 time.sleep(1)
         except Exception as e:
-            print()
+            pass
 
     except Exception as e:
         print(f"Không thể start game: ", e)

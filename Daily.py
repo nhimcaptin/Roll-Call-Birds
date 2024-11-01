@@ -7,7 +7,21 @@ from selenium.webdriver.common.by import By
 import concurrent.futures
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from utils import action_play_game, getUserDataDir, chrome_driver_path, clickButton, timesSleep
+import os
+import logging
+from utils import (
+    action_play_game,
+    getUserDataDir,
+    chrome_driver_path,
+    clickButton,
+    timesSleep,
+    authenticationWallet,
+)
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+logging.getLogger("selenium").setLevel(logging.WARNING)
+logging.getLogger("selenium.webdriver").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 countProject = int(input("Nhập số profile: "))
 numberThreads = int(input("Nhập số luồng: "))
@@ -16,7 +30,6 @@ buttonActions = [
     "//button[@type='button' and contains(text(), 'Continue')]",
     "//img[@alt='hammer']",
     "//a[@href='/daily']",
-    "//button[not(contains(@class, 'pointer-events-none')) and contains(., 'Day')]",
 ]
 
 
@@ -29,6 +42,8 @@ def run_profile(i):
     user_data_dir = getUserDataDir(i)
     chrome_options = Options()
     chrome_options.add_argument(f"user-data-dir={user_data_dir}")
+    chrome_options.add_argument("--silent")
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument(f"--proxy-server=http://{proxy[i-1]}")
     chrome_options.add_argument("--window-size=250,600")
 
@@ -45,38 +60,22 @@ def run_profile(i):
         # Chuyển sang iframe chứa tab
         iframe = driver.find_element(By.TAG_NAME, "iframe")
         driver.switch_to.frame(iframe)
-        
+
         for button in buttonActions:
             clickButton(driver, button)
-            
-        try:
-            # Nhập password ví
-            try:
-                timesSleep()
-                input_field = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, "//input[@id='swal2-input']"))
-                )
-                input_field.send_keys(230602)
 
-                timesSleep(5)
-                buttonUnlock = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Unlock')]"))
-                )
-                buttonUnlock.click()
-            except Exception as e:
-                print("Không cần nhập ví")
-            # Kêt thúc nhập password ví
-                
-            timesSleep(3)
-            buttonApprove = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Approve')]"))
-            )
-            buttonApprove.click()
+        isCheckExist = clickButton(
+            driver,
+            "//button[not(contains(@class, 'pointer-events-none')) and contains(., 'Day')]",
+            "Đã điểm danh rồi"
+        )
+        
+        if isCheckExist:
+            raise
+        authenticationWallet(driver)
 
-        except Exception as e:
-            print("Đã điểm danh rồi")
     except Exception as e:
-        print(f"Không thể click vào tab 'Earn': {e}")
+        pass
 
     time.sleep(5)
     driver.quit()
