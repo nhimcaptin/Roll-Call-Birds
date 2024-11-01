@@ -12,13 +12,6 @@ from utils import action_play_game, getUserDataDir, chrome_driver_path, clickBut
 countProject = int(input("Nhập số profile: "))
 numberThreads = int(input("Nhập số luồng: "))
 proxy = []
-# buttonActions = [
-#     "//button[@type='button' and contains(text(), 'Continue')]",
-#     "//img[@alt='hammer']",
-#     "//a[@href='/daily']",
-#     "//button[not(contains(@class, 'pointer-events-none')) and contains(., 'Day')]",
-# ]
-
 buttonActions = [
     "//button[@type='button' and contains(text(), 'Continue')]",
     "//a[@href='/storage']",
